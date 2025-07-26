@@ -3,6 +3,7 @@
 import { useState } from "react";
 import "./App.css";
 import config from "./config";
+import QuickTest from "./components/QuickTest";
 
 function App() {
   const [formData, setFormData] = useState({
@@ -176,6 +177,8 @@ function App() {
               </div>
             )}
             <form onSubmit={handleSubmit} className="main-form">
+              {/* Debug Component - Remove after fixing */}
+              <QuickTest />
               {/* Row 1: First Name & Last Name */}
               <div className="form-row-container">
                 <div className="input-container">
