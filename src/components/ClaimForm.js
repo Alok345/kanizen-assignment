@@ -32,8 +32,26 @@ const ClaimForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    // Debug: Log form data and validation
+    console.log("Form submission started");
+    console.log("Form data:", formData);
+    console.log("Validation:", {
+      agreeToTerms: formData.agreeToTerms,
+      verifyHuman: formData.verifyHuman,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email
+    });
+
     if (!formData.agreeToTerms || !formData.verifyHuman) {
       setSubmitMessage("Please complete all required fields and checkboxes.")
+      console.log("Form validation failed - checkboxes not checked");
+      return
+    }
+
+    if (!formData.firstName || !formData.lastName || !formData.email) {
+      setSubmitMessage("Please fill in all required fields (First Name, Last Name, Email).")
+      console.log("Form validation failed - missing required fields");
       return
     }
 
@@ -41,20 +59,30 @@ const ClaimForm = () => {
     setSubmitMessage("")
 
     try {
+      const apiUrl = config.getApiUrl("/api/form");
+      const requestBody = {
+        fullName: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        message: JSON.stringify(formData),
+      };
+
+      console.log("Making API request to:", apiUrl);
+      console.log("Request body:", requestBody);
+
       // Use configuration for API URL
-      const response = await fetch(config.getApiUrl("/api/form"), {
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          fullName: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          message: JSON.stringify(formData),
-        }),
+        body: JSON.stringify(requestBody),
       })
 
+      console.log("Response status:", response.status);
+      console.log("Response headers:", Object.fromEntries(response.headers.entries()));
+
       const result = await response.json()
+      console.log("Response data:", result);
 
       if (response.ok) {
         setSubmitMessage("✅ Thank you! Your claim form has been submitted successfully. We'll contact you soon.")
@@ -77,6 +105,11 @@ const ClaimForm = () => {
       }
     } catch (error) {
       console.error("Form submission error:", error)
+      console.error("Error details:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       setSubmitMessage("❌ Network error. Please check your connection and try again.")
     } finally {
       setIsSubmitting(false)
